@@ -110,13 +110,18 @@
   .steps .n { flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
   .decides { margin-top: 14px; font-size: 13.5px; color: var(--muted); }
   .decides strong { color: var(--ink); }
-  .foot { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .card-body { display: grid; grid-template-columns: 1fr; gap: 0 32px; }
+  .col-r > :first-child { margin-top: 16px; }
+  .card-bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .card-bottom .decides { margin-top: 0; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
   .tag { background: var(--panel); border-radius: 6px; padding: 3px 9px; font-size: 12.5px; color: #3A3A3A; }
-  details.mod { margin-top: 12px; }
-  details.mod summary { cursor: pointer; font-size: 13px; font-weight: 700; color: var(--gold-text); list-style: none; }
-  details.mod summary::-webkit-details-marker { display: none; }
-  details.mod summary::before { content: "+ "; }
-  details.mod[open] summary::before { content: "– "; }
+  .extras { display: flex; flex-wrap: wrap; gap: 6px 24px; margin-top: 12px; }
+  .extras details[open] { flex-basis: 100%; }
+  details.more summary { cursor: pointer; font-size: 13px; font-weight: 700; color: var(--gold-text); list-style: none; }
+  details.more summary::-webkit-details-marker { display: none; }
+  details.more summary::before { content: "+ "; }
+  details.more[open] summary::before { content: "– "; }
   .mod-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
   .mod-list span { border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; font-size: 12.5px; }
   .shot { display: block; margin-top: 16px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: var(--panel); padding: 10px; }
@@ -131,6 +136,16 @@
   .btn-ghost { border: 1px solid rgba(255,255,255,0.35); color: #fff; background: transparent; }
   .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
   .restart { display: block; margin: 20px auto 0; }
+  #feed.wide { max-width: 1080px; }
+  #feed.wide > .answered { max-width: 600px; margin-left: auto; margin-right: auto; }
+  .results .summary-line { max-width: 820px; }
+  .cta { max-width: 760px; margin-left: auto; margin-right: auto; }
+  @media (min-width: 900px) {
+    .card { padding: 28px 32px; }
+    .card-body { grid-template-columns: 1.15fr 1fr; }
+    .col-r { padding-left: 32px; border-left: 1px solid var(--line); }
+    .col-r > :first-child { margin-top: 14px; }
+  }
 
   footer { text-align: center; padding: 16px 20px; font-size: 12.5px; color: rgba(255,255,255,0.5); border-top: 1px solid rgba(255,255,255,0.08); }
   @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
@@ -324,52 +339,63 @@
     (data.workflows || []).forEach(w => {
       const c = el("article", "card");
       const top = el("div", "card-top");
-      const left = el("div");
+      const head = el("div");
       const dept = el("p", "dept", w.departemen || "");
       if (w.id === "new") dept.appendChild(el("span", "new-tag", "Ide baru"));
-      left.append(dept, el("h3", "serif", w.nama));
-      top.append(left, el("span", "badge " + (badge[w.tingkat_kesulitan] || "b-menengah"), w.tingkat_kesulitan || "Menengah"));
+      head.append(dept, el("h3", "serif", w.nama));
+      top.append(head, el("span", "badge " + (badge[w.tingkat_kesulitan] || "b-menengah"), w.tingkat_kesulitan || "Menengah"));
       c.appendChild(top);
-      if (w.contoh_skenario) c.appendChild(el("p", "scenario", w.contoh_skenario));
-      if (w.deskripsi) c.appendChild(el("p", "desc", w.deskripsi));
 
+      // Two columns on desktop: what it is (left), benefits and first steps (right)
+      const body = el("div", "card-body");
+      const colL = el("div", "col-l"), colR = el("div", "col-r");
+      if (w.contoh_skenario) colL.appendChild(el("p", "scenario", w.contoh_skenario));
+      if (w.deskripsi) colL.appendChild(el("p", "desc", w.deskripsi));
       const io = el("dl", "io");
       const a = el("div"); a.append(el("dt", "", "Input"), el("dd", "", w.input || "-"));
       const b = el("div", "out"); b.append(el("dt", "", "Output"), el("dd", "", w.output || "-"));
-      io.append(a, b); c.appendChild(io);
-
+      io.append(a, b); colL.appendChild(io);
       if ((w.manfaat || []).length) {
         const ul = el("ul", "benefits");
         w.manfaat.forEach(m => ul.appendChild(el("li", "", m)));
-        c.appendChild(ul);
+        colR.appendChild(ul);
       }
       if ((w.langkah_awal || []).length) {
         const st = el("div", "steps"); st.appendChild(el("p", "label", "Mulai dari sini"));
         const ol = el("ol");
         w.langkah_awal.forEach((s, k) => { const li = el("li"); li.append(el("span", "n", String(k + 1)), el("span", "", s)); ol.appendChild(li); });
-        st.appendChild(ol); c.appendChild(st);
+        st.appendChild(ol); colR.appendChild(st);
       }
-      if (w.mockup && /^[\w.-]+\.png$/.test(w.mockup)) {
-        const shot = el("a", "shot"); shot.href = "img/" + w.mockup; shot.target = "_blank"; shot.rel = "noopener";
-        const img = document.createElement("img"); img.src = "img/" + w.mockup; img.alt = "Contoh tampilan " + w.nama; img.loading = "lazy";
-        shot.appendChild(img); c.append(shot, el("p", "shot-cap", "Contoh tampilan dengan data fiktif"));
-      }
+      body.append(colL, colR); c.appendChild(body);
+
+      const bottom = el("div", "card-bottom");
       if (w.siapa_memutuskan) {
         const d = el("p", "decides"); d.append(el("strong", "", "Siapa yang memutuskan: "), document.createTextNode(w.siapa_memutuskan));
-        c.appendChild(d);
+        bottom.appendChild(d);
       }
       if ((w.tools_dibutuhkan || []).length) {
-        const f = el("div", "foot");
+        const f = el("div", "tags");
         w.tools_dibutuhkan.forEach(t => f.appendChild(el("span", "tag", t)));
-        c.appendChild(f);
+        bottom.appendChild(f);
+      }
+      c.appendChild(bottom);
+
+      const extras = el("div", "extras");
+      if (w.mockup && /^[\w.-]+\.png$/.test(w.mockup)) {
+        const det = el("details", "more"); det.appendChild(el("summary", "", "Lihat contoh tampilan"));
+        const shot = el("a", "shot"); shot.href = "img/" + w.mockup; shot.target = "_blank"; shot.rel = "noopener";
+        const img = document.createElement("img"); img.src = "img/" + w.mockup; img.alt = "Contoh tampilan " + w.nama; img.loading = "lazy";
+        shot.appendChild(img); det.append(shot, el("p", "shot-cap", "Contoh tampilan dengan data fiktif"));
+        extras.appendChild(det);
       }
       const mods = (w.modul_terkait || []).filter(n => MODS[n]);
       if (mods.length) {
-        const det = el("details", "mod"); det.appendChild(el("summary", "", "Modul terkait di program"));
+        const det = el("details", "more"); det.appendChild(el("summary", "", "Modul terkait di program"));
         const ml = el("div", "mod-list");
         mods.forEach(n => ml.appendChild(el("span", "", "Modul " + n + " · " + MODS[n])));
-        det.appendChild(ml); c.appendChild(det);
+        det.appendChild(ml); extras.appendChild(det);
       }
+      if (extras.childNodes.length) c.appendChild(extras);
       sec.appendChild(c);
     });
 
@@ -388,6 +414,7 @@
     sec.appendChild(cta);
     const again = el("button", "btn btn-text restart", "↺ Mulai ulang dengan profil berbeda"); again.onclick = () => location.reload();
     sec.appendChild(again);
+    feed.classList.add("wide");
     feed.appendChild(sec);
     sec.scrollIntoView({ behavior: "smooth", block: "start" });
   }
