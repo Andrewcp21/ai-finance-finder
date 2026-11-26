@@ -1,5 +1,5 @@
 // Analyze handler for POST /ai-finance-finder/api/analyze (called from worker.js)
-// Takes the visitor's finder answers, asks Claude to pick and tailor 3-5 tools
+// Takes the visitor's finder answers, asks Claude to pick and tailor 3 tools
 // (mostly from the reviewed catalogue, at most one new idea) and returns them as JSON.
 // Calls the model through OpenRouter (OpenAI-compatible chat completions with a forced tool call).
 // Needs the OPENROUTER_API_KEY secret. OPENROUTER_MODEL is optional.
@@ -42,7 +42,7 @@ ${catalogText}
 Program modules: ${Object.entries(MODULES).map(([k, v]) => `${k}. ${v}`).join("; ")}.
 
 Rules:
-- Recommend 3 to 5 tools, best fit first, based on the visitor's role, company size, challenge, systems, AI experience and what they want to automate.
+- Recommend exactly 3 tools, best fit first, based on the visitor's role, company size, challenge, systems, AI experience and what they want to automate.
 - Use catalogue ideas (set "id" to the catalogue id). Add at most ONE new idea (id "new") and only when no catalogue idea covers what the visitor asked for.
 - Tailor every field to the visitor: name their role, systems and situation in the scenario, and adjust input, steps and benefits to the systems they use. Keep facts consistent with the catalogue idea.
 - Write all text in natural, professional Bahasa Indonesia. Keep standard terms such as FP&A, PPN, PPh, SP2DK, DJP, Coretax, transfer pricing, NPV and PSAK as they are.
@@ -60,7 +60,7 @@ const TOOL = {
     properties: {
       ringkasan: { type: "string", description: "One sentence in Bahasa Indonesia about why these tools fit the visitor." },
       workflows: {
-        type: "array", minItems: 3, maxItems: 5,
+        type: "array", minItems: 3, maxItems: 3,
         items: {
           type: "object",
           properties: {
@@ -125,7 +125,7 @@ function validate(data) {
     w.modul_terkait = (w.modul_terkait || []).filter(n => MODULES[n]);
     list.push(w);
   }
-  return { ringkasan: String(data?.ringkasan || ""), workflows: list.slice(0, 5), modules: MODULES };
+  return { ringkasan: String(data?.ringkasan || ""), workflows: list.slice(0, 3), modules: MODULES };
 }
 
 export async function onRequestPost({ request, env }) {
@@ -160,7 +160,7 @@ Recommend the tools with the rekomendasi tool.`;
       },
       body: JSON.stringify({
         model: env.OPENROUTER_MODEL || DEFAULT_MODEL,
-        max_tokens: 8000, // 5 tailored workflows in Bahasa Indonesia overflow 4000 and truncate the JSON
+        max_tokens: 6000, // 3 tailored workflows in Bahasa Indonesia, with headroom so the JSON is never cut off
         messages: [{ role: "system", content: SYSTEM }, { role: "user", content: userMsg }],
         tools: [TOOL],
         tool_choice: "auto", // Sonnet 5.5 providers on OpenRouter reject forced tool_choice; the prompt asks for the rekomendasi tool

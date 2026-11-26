@@ -2,7 +2,7 @@
 
 A Bahasa Indonesia finder for the UI × RevoU AI-Enabled Strategic Finance program, in the style of tools.revou.co.
 
-Visitors type their role and answer four quick questions: company size, biggest challenge, systems used and AI experience. They then get 3–5 tailored AI tool recommendations. Most recommendations come from 31 reviewed finance tool ideas, with at most one new idea when nothing fits.
+Visitors type their role and answer four quick questions: company size, biggest challenge, systems used and AI experience. They then get 3 tailored AI tool recommendations. Most recommendations come from 31 reviewed finance tool ideas, with at most one new idea when nothing fits.
 
 ## Structure (Cloudflare Worker with static assets)
 
