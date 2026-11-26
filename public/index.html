@@ -49,6 +49,13 @@
   .go:hover:not(:disabled) { background: var(--gold-hover); }
   .go:disabled { opacity: 0; pointer-events: none; }
 
+  /* Category pills: outline only */
+  .cats { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: -4px; transition: opacity .25s; }
+  .cats button { background: transparent; border: 1px solid rgba(255,255,255,0.5); color: #fff; border-radius: 999px; padding: 7px 18px;
+    font: inherit; font-size: 13.5px; font-weight: 500; letter-spacing: 0.2px; cursor: pointer; transition: border-color .2s, background .2s; }
+  .cats button:hover, .cats button:focus-visible { border-color: #fff; background: rgba(255,255,255,0.08); outline: none; }
+  body.started .cats { display: none; }
+
   /* Question feed, on the dark photo */
   #feed { width: 100%; max-width: 600px; margin-top: 8px; }
   .answered { display: flex; gap: 12px; align-items: baseline; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,0.12); animation: fade .25s ease; }
@@ -160,6 +167,8 @@
     .logos .sep { height: 26px; }
     .search { padding-left: 16px; }
     .search input { font-size: 15px; }
+    .cats { gap: 8px; }
+    .cats button { padding: 6px 14px; font-size: 13px; }
     .answered .k { width: 96px; }
     .io { grid-template-columns: 1fr; }
     .card { padding: 18px; }
@@ -185,6 +194,13 @@
       <button class="go" id="go" disabled aria-label="Mulai">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </button>
+    </div>
+    <div class="cats" id="cats" aria-label="Pilih bidang">
+      <button type="button">Finance &amp; FP&amp;A</button>
+      <button type="button">Corporate Finance</button>
+      <button type="button">Tax</button>
+      <button type="button">Legal</button>
+      <button type="button">Accounting</button>
     </div>
   </div>
   <div id="feed"></div>
@@ -246,6 +262,7 @@
   input.addEventListener("input", () => { go.disabled = !input.value.trim(); });
   input.addEventListener("keydown", e => { if (e.key === "Enter" && input.value.trim()) start(); });
   go.addEventListener("click", start);
+  document.querySelectorAll("#cats button").forEach(b => b.addEventListener("click", () => { input.value = b.textContent; go.disabled = false; start(); }));
 
   function start() {
     const v = input.value.trim();
