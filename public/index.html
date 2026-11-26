@@ -84,6 +84,10 @@
   .dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--gold); animation: bounce 1.1s infinite ease-in-out; }
   .dots i:nth-child(2) { animation-delay: .15s; background: #fff; }
   .dots i:nth-child(3) { animation-delay: .3s; }
+  .load-text { display: flex; flex-direction: column; gap: 3px; }
+  .load-step { transition: opacity .3s ease; }
+  .load-step.out { opacity: 0; }
+  .load-hint { font-size: 12.5px; color: var(--dim); }
   .error { margin-top: 24px; background: #FDECEA; border: 1px solid #F5C2BD; color: #8A1C12; border-radius: 12px; padding: 14px 16px; font-size: 14.5px; }
 
   /* Results: white cards on the photo */
@@ -213,26 +217,26 @@
   const WA_NUMBER = ""; // e.g. "62812xxxxxxx" to show a WhatsApp button
 
   const CHALLENGES = {
-    "FP&A": ["Menulis komentar varians tiap closing", "Forecast dan skenario what-if yang cepat", "Menjelaskan beda laba dan kas ke tim bisnis", "Diskon dan margin bocor di data penjualan", "Menyiapkan memo atau deck untuk CFO dan direksi", "Proposal ditolak karena pertanyaan tak terduga"],
-    "Treasury": ["Forecast kas mingguan masih manual", "Memilih pinjaman bank, pinjaman pemegang saham, atau ekuitas", "Memantau covenant pinjaman", "Kas menumpuk di satu entitas, entitas lain berutang", "Batas rasio utang terhadap modal (DER 4:1)", "Laporan posisi kas grup"],
-    "Tax": ["Membalas SP2DK dari DJP", "Koreksi fiskal SPT Tahunan Badan", "Perlakuan PPN 12% dan kode faktur", "Menentukan pasal dan tarif PPh", "Dokumentasi transfer pricing", "Mengikuti perubahan regulasi pajak"],
-    "Accounting": ["Jurnal tidak wajar baru ketahuan saat audit", "Rekonsiliasi saldo intercompany", "Jurnal eliminasi konsolidasi", "Perlakuan akuntansi transaksi tidak biasa (PSAK)", "Closing bulanan memakan waktu lama", "Menulis komentar laporan bulanan"],
-    "Legal": ["Review klausul finansial sebelum tanda tangan kontrak", "Perjanjian intercompany belum lengkap", "Memetakan persetujuan RUPS, direksi, dan komisaris", "Termin pembayaran dan tanggal perpanjangan kontrak tersebar", "Data pribadi (UU PDP) di dokumen", "Klausul kontrak yang berdampak pajak"],
-    "Deals": ["Due diligence calon target akuisisi", "Menguji valuasi sebelum negosiasi", "Transaksi intercompany: pinjaman, setoran modal, management fee", "Struktur pendanaan transaksi", "Persetujuan korporasi untuk transaksi", "Laporan ringkas untuk CFO atau komite investasi"],
-    "CFO": ["Kas tidak terlihat jauh ke depan", "Keputusan pendanaan dan struktur modal", "Risiko pajak di transaksi grup", "Memastikan output AI tim bisa dipercaya", "Data sensitif masuk ke tools AI", "Laporan dan memo untuk direksi dan komisaris"],
-    "Lainnya": ["Input dan rekonsiliasi data manual", "Laporan bulanan memakan waktu", "Pertanyaan pajak sehari-hari", "Review kontrak dan dokumen", "Forecast kas dan anggaran", "Menjaga data sensitif saat memakai AI"],
+    "FP&A": ["Menulis variance commentary setiap closing", "Forecast dan skenario what-if yang lebih cepat", "Menjelaskan kenapa profit dan cash berbeda ke tim bisnis", "Margin bocor karena diskon di data sales", "Menyiapkan memo atau deck untuk CFO dan direksi", "Proposal ditolak karena pertanyaan yang tidak diantisipasi"],
+    "Treasury": ["Cash forecast mingguan masih manual", "Memilih bank loan, shareholder loan, atau equity", "Monitoring loan covenant", "Cash menumpuk di satu entitas, entitas lain justru berutang", "Batas DER 4:1 (debt to equity)", "Laporan cash position grup"],
+    "Tax": ["Membalas SP2DK dari DJP", "Koreksi fiskal SPT Tahunan Badan", "Perlakuan PPN 12% dan kode faktur", "Menentukan pasal dan tarif PPh", "Dokumentasi transfer pricing", "Mengikuti update regulasi pajak"],
+    "Accounting": ["Jurnal janggal baru ketahuan saat audit", "Rekonsiliasi saldo intercompany", "Jurnal eliminasi konsolidasi", "Accounting treatment untuk transaksi non-rutin (PSAK)", "Monthly closing makan waktu lama", "Menulis commentary untuk laporan bulanan"],
+    "Legal": ["Review klausul finansial sebelum tanda tangan kontrak", "Perjanjian intercompany belum lengkap", "Mapping approval RUPS, direksi, dan komisaris", "Payment terms dan tanggal renewal kontrak tersebar di banyak dokumen", "Data pribadi (UU PDP) di dalam dokumen", "Klausul kontrak yang berdampak pajak"],
+    "Deals": ["Due diligence calon target akuisisi", "Stress-test valuasi sebelum negosiasi", "Transaksi intercompany: loan, setoran modal, management fee", "Funding structure untuk transaksi", "Corporate approval untuk transaksi", "Ringkasan untuk CFO atau investment committee"],
+    "CFO": ["Visibilitas cash ke depan masih minim", "Keputusan funding dan capital structure", "Risiko pajak di transaksi grup", "Memastikan output AI tim bisa dipercaya", "Data sensitif masuk ke tools AI", "Laporan dan memo untuk direksi dan komisaris"],
+    "Lainnya": ["Input data dan rekonsiliasi masih manual", "Laporan bulanan makan waktu lama", "Pertanyaan pajak sehari-hari", "Review kontrak dan dokumen", "Cash forecast dan budgeting", "Menjaga data sensitif saat memakai AI"],
   };
 
   const QUESTIONS = [
     { id: "ukuran_perusahaan", short: "Perusahaan", text: "Seberapa besar perusahaan Anda?",
       options: ["UMKM atau startup (di bawah 50 orang)", "Menengah (50–250 orang)", "Besar atau grup perusahaan (di atas 250 orang)", "Konsultan, KAP, atau firma pajak"] },
     { id: "tantangan", short: "Tantangan", text: "Apa tantangan terbesar Anda saat ini?", dynamic: true },
-    { id: "sistem", short: "Sistem", text: "Sistem apa yang Anda gunakan?", multi: true,
+    { id: "sistem", short: "Sistem", text: "Sistem apa saja yang Anda pakai?", multi: true,
       options: ["Excel / Google Sheets", "Accurate / Jurnal / Zahir", "SAP / Oracle / Microsoft Dynamics", "Coretax / e-Faktur / e-Bupot", "Power BI / Tableau", "Aplikasi payroll / HRIS", "Belum pakai sistem khusus"] },
     { id: "pengalaman_ai", short: "Pengalaman AI", text: "Seberapa sering Anda memakai AI untuk bekerja?",
-      options: ["Belum pernah", "Sesekali, untuk menulis atau merangkum", "Rutin, termasuk untuk analisis data", "Sudah membuat tools atau otomasi sendiri"] },
-    { id: "keinginan", short: "Ingin dibantu", text: "Ada proses spesifik yang ingin Anda bantu dengan AI? (opsional)", textarea: true,
-      placeholder: "Contoh: tiap bulan saya mencocokkan saldo intercompany dari 5 entitas di Excel..." },
+      options: ["Belum pernah", "Sesekali, untuk menulis atau merangkum", "Rutin, termasuk untuk analisis data", "Sudah membuat tools atau automation sendiri"] },
+    { id: "keinginan", short: "Ingin dibantu", text: "Ada proses spesifik yang ingin dibantu AI? (opsional)", textarea: true,
+      placeholder: "Contoh: tiap bulan saya rekonsiliasi saldo intercompany dari 5 entitas di Excel..." },
   ];
 
   const answers = {};
@@ -322,23 +326,51 @@
     if (i + 1 < QUESTIONS.length) ask(i + 1); else submit();
   }
 
+  // Loading messages that move through what the server is doing, using the visitor's own answers.
+  function loadingSteps() {
+    let role = String(answers.profesi || "").trim();
+    if (role.length > 40) role = role.slice(0, 38).trim() + "…";
+    const systems = (Array.isArray(answers.sistem) ? answers.sistem : [])
+      .filter(s => !/^Belum/i.test(s))
+      .map(s => s.split("/")[0].trim())
+      .slice(0, 2);
+    return [
+      role ? `Membaca profil Anda: ${role}...` : "Membaca profil Anda...",
+      "Memilih dari 31 ide tools finance...",
+      systems.length ? `Menyesuaikan dengan ${systems.join(" dan ")}...` : "Menyesuaikan dengan cara kerja Anda...",
+      "Menyusun langkah awal untuk Anda...",
+      "Hampir selesai, merapikan rekomendasi...",
+    ];
+  }
+
   async function submit() {
     const load = el("div", "loading");
     const dots = el("div", "dots"); dots.innerHTML = "<i></i><i></i><i></i>";
-    load.append(dots, el("span", "", "Menyusun rekomendasi tools untuk Anda..."));
+    const stepEl = el("span", "load-step", "");
+    const text = el("div", "load-text");
+    text.append(stepEl, el("span", "load-hint", "Biasanya sekitar 20 detik"));
+    load.append(dots, text);
     feed.appendChild(load);
     load.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    const steps = loadingSteps();
+    let n = 0;
+    stepEl.textContent = steps[0];
+    const ticker = setInterval(() => {
+      if (n >= steps.length - 1) return clearInterval(ticker);
+      stepEl.classList.add("out");
+      setTimeout(() => { stepEl.textContent = steps[++n]; stepEl.classList.remove("out"); }, 300);
+    }, 4500);
     const flat = {};
     for (const [k, v] of Object.entries(answers)) flat[k] = Array.isArray(v) ? v.join(", ") : v;
     try {
       const r = await fetch("api/analyze", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ answers: flat }) });
       let data = {};
       try { data = await r.json(); } catch (_) {}
-      load.remove();
+      clearInterval(ticker); load.remove();
       if (!r.ok) throw new Error(data.error || "Gagal mendapatkan rekomendasi. Silakan coba lagi.");
       render(data);
     } catch (e) {
-      load.remove();
+      clearInterval(ticker); load.remove();
       const box = el("div", "error", e.message || "Terjadi kesalahan. Silakan coba lagi.");
       feed.appendChild(box);
       const again = el("button", "btn btn-text restart", "↺ Coba lagi"); again.onclick = () => location.reload();
@@ -392,7 +424,7 @@
       }
       if ((w.tools_dibutuhkan || []).length) {
         const f = el("div", "tags");
-        w.tools_dibutuhkan.forEach(t => f.appendChild(el("span", "tag", t)));
+        w.tools_dibutuhkan.forEach(t => f.appendChild(el("span", "tag", /^claude\b/i.test(t) ? "Dibangun dengan Claude" : t)));
         bottom.appendChild(f);
       }
       c.appendChild(bottom);
@@ -417,8 +449,8 @@
     });
 
     const cta = el("div", "cta");
-    cta.append(el("p", "eb", "Langkah selanjutnya"), el("h2", "serif", "Ingin membangun tools seperti ini di tempat kerja Anda?"),
-      el("p", "", "Di program AI-Enabled Strategic Finance dari Universitas Indonesia × RevoU, Anda mempraktikkan analisis keuangan, pajak, dan keputusan grup dengan dan tanpa AI."));
+    cta.append(el("p", "eb", "Langkah selanjutnya"), el("h2", "serif", "Ingin bisa membuat tools seperti ini sendiri?"),
+      el("p", "", "Di program AI-Enabled Strategic Finance dari Universitas Indonesia × RevoU, Anda praktik langsung financial analysis, perpajakan, dan keputusan grup, dengan dan tanpa AI."));
     const row = el("div", "row");
     const prog = el("a", "btn btn-gold", "Lihat programnya"); prog.href = PROGRAM_URL; prog.target = "_blank"; prog.rel = "noopener";
     row.appendChild(prog);
