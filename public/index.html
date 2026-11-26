@@ -387,7 +387,7 @@
 
       const bottom = el("div", "card-bottom");
       if (w.siapa_memutuskan) {
-        const d = el("p", "decides"); d.append(el("strong", "", "Siapa yang memutuskan: "), document.createTextNode(w.siapa_memutuskan));
+        const d = el("p", "decides"); d.append(el("strong", "", "Pengambil Keputusan: "), document.createTextNode(w.siapa_memutuskan));
         bottom.appendChild(d);
       }
       if ((w.tools_dibutuhkan || []).length) {
