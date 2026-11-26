@@ -179,7 +179,6 @@
 
 <script>
   const PROGRAM_URL = "https://www.revou.co/ui-finance";
-  const IDEAS_URL = "https://claude.ai/artifact/MDkN5cyxjtuDd8o57Hnjsk";
   const WA_NUMBER = ""; // e.g. "62812xxxxxxx" to show a WhatsApp button
 
   const CHALLENGES = {
@@ -385,8 +384,6 @@
       const wa = el("a", "btn btn-ghost", "Konsultasi via WhatsApp"); wa.href = "https://wa.me/" + WA_NUMBER + "?text=" + encodeURIComponent(msg); wa.target = "_blank"; wa.rel = "noopener";
       row.appendChild(wa);
     }
-    const all = el("a", "btn btn-ghost", "Lihat semua ide"); all.href = IDEAS_URL; all.target = "_blank"; all.rel = "noopener";
-    row.appendChild(all);
     cta.appendChild(row);
     sec.appendChild(cta);
     const again = el("button", "btn btn-text restart", "↺ Mulai ulang dengan profil berbeda"); again.onclick = () => location.reload();
