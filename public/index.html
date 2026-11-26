@@ -292,7 +292,7 @@
     const flat = {};
     for (const [k, v] of Object.entries(answers)) flat[k] = Array.isArray(v) ? v.join(", ") : v;
     try {
-      const r = await fetch("/api/analyze", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ answers: flat }) });
+      const r = await fetch("api/analyze", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ answers: flat }) });
       let data = {};
       try { data = await r.json(); } catch (_) {}
       load.remove();

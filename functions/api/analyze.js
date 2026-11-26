@@ -1,4 +1,4 @@
-// Cloudflare Pages Function: POST /api/analyze
+// Analyze handler for POST /ai-finance-finder/api/analyze (called from worker.js)
 // Takes the visitor's finder answers, asks Claude to pick and tailor 3-5 tools
 // (mostly from the reviewed catalogue, at most one new idea) and returns them as JSON.
 // Calls the model through OpenRouter (OpenAI-compatible chat completions with a forced tool call).
@@ -160,10 +160,10 @@ Recommend the tools with the rekomendasi tool.`;
       },
       body: JSON.stringify({
         model: env.OPENROUTER_MODEL || DEFAULT_MODEL,
-        max_tokens: 4000,
+        max_tokens: 8000, // 5 tailored workflows in Bahasa Indonesia overflow 4000 and truncate the JSON
         messages: [{ role: "system", content: SYSTEM }, { role: "user", content: userMsg }],
         tools: [TOOL],
-        tool_choice: { type: "function", function: { name: "rekomendasi" } },
+        tool_choice: "auto", // Sonnet 5.5 providers on OpenRouter reject forced tool_choice; the prompt asks for the rekomendasi tool
         provider: { require_parameters: true },
       }),
     });
@@ -180,6 +180,7 @@ Recommend the tools with the rekomendasi tool.`;
     } catch (e) {
       console.error("Could not parse model output", e);
     }
+    if (data.choices?.[0]?.finish_reason === "length") console.error("Model output truncated at max_tokens");
     const result = validate(args);
     if (!result.workflows.length) return json({ error: "Tidak ada rekomendasi ditemukan. Silakan coba lagi." }, 502);
     return json(result);

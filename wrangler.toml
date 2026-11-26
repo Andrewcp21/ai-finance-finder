@@ -1,3 +1,17 @@
 name = "ai-finance-finder"
-pages_build_output_dir = "public"
+main = "worker.js"
 compatibility_date = "2026-11-01"
+account_id = "8383f94454bf227d879221677a72a9a1"
+workers_dev = false
+routes = [
+  { pattern = "tools.revou.co/ai-finance-finder*", zone_name = "revou.co" }
+]
+
+[assets]
+directory = "public"
+binding = "ASSETS"
+run_worker_first = true
+
+# Secrets (set with `npx wrangler secret put <NAME>`):
+#   OPENROUTER_API_KEY  required
+# Optional var: OPENROUTER_MODEL (defaults to anthropic/claude-sonnet-5.5)
